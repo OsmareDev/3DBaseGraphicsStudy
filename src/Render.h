@@ -4,6 +4,7 @@
 #pragma once
 
 #include "Window.h"
+#include "Model.h"
 
 namespace Render {
 

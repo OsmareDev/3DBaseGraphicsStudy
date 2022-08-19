@@ -20,7 +20,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             Window::GetInstance().window_width = rect.right - rect.left;
             Window::GetInstance().window_height = rect.bottom - rect.top;
 
-            
+            Window::GetInstance().RecalculateMemory();
         }
         default:
         {
@@ -134,8 +134,8 @@ void Window::RunningLoop()
     }
 }
 
-void Window::PaintPixel(const int& desplazamiento, const uint32_t& color) const 
+void Window::PaintPixel(const int& x, const int& y, const uint32_t& color) const 
 {
-    uint32_t* pixel = (uint32_t*)memory + desplazamiento;
+    uint32_t* pixel = (uint32_t*)memory + (y * window_width) + x;
     *pixel = color;
 }

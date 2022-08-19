@@ -32,7 +32,7 @@ public:
 	// Functions
 	void SetRender(void(*function)()) { Render = function; };
 	void StartLoop();
-	void PaintPixel(const int& desplazamiento, const uint32_t& color) const;
+	void PaintPixel(const int& x, const int& y, const uint32_t& color) const;
 	
 private:
 	Window();
