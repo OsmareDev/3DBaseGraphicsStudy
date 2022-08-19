@@ -134,7 +134,8 @@ void Window::RunningLoop()
     }
 }
 
-void Window::Render()
+void Window::PaintPixel(const int& desplazamiento, const uint32_t& color) const 
 {
-
+    uint32_t* pixel = (uint32_t*)memory + desplazamiento;
+    *pixel = color;
 }

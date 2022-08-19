@@ -30,8 +30,9 @@ public:
 	friend LRESULT CALLBACK WindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 	// Functions
-	void Render();
+	void SetRender(void(*function)()) { Render = function; };
 	void StartLoop();
+	void PaintPixel(const int& desplazamiento, const uint32_t& color) const;
 	
 private:
 	Window();
@@ -41,6 +42,8 @@ private:
 	void RecalculateMemory();
 
 	static Window main_window;
+
+	void(*Render)();
 
 	int window_width = 1280, window_height = 720;
 	std::wstring window_title = L"Void Engine";
