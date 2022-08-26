@@ -127,12 +127,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Geometry.cpp" />
     <ClCompile Include="src\Model.cpp" />
     <ClCompile Include="src\Render.cpp" />
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Crono.h" />
     <ClInclude Include="src\Geometry.h" />
     <ClInclude Include="src\Model.h" />
     <ClInclude Include="src\Render.h" />

@@ -5,14 +5,19 @@
 
 #include "Window.h"
 #include "Model.h"
+#include "Crono.h"
 
 namespace Render {
 
-	void dLine_Bresenham(int x_ini, int y_ini, int x_end, int y_end, uint32_t color);
-	bool sunderCoen(int& x0, int& y0, int& x1, int& y1);
-	int compute(int x, int y);
 	void Renderize();
 
+	// lineas
+	void dLine_Bresenham(int x_ini, int y_ini, int x_end, int y_end, const uint32_t& color);
+	void dLine_DDA(int x_ini, int y_ini, int x_end, int y_end, const uint32_t& color);
+	bool sunderCoen(int& x0, int& y0, int& x1, int& y1);
+	int compute(int x, int y);
+	
+	// triangulos
 }
 
 #endif //__RENDER__

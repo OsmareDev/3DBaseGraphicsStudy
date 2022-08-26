@@ -4,6 +4,8 @@
 #pragma once
 
 #include <cmath>
+#include <vector>
+#include <assert.h>
 
 template <class t> struct Vec2 {
 	union {
@@ -40,4 +42,49 @@ typedef Vec2<int>   Vec2i;
 typedef Vec3<float> Vec3f;
 typedef Vec3<int>   Vec3i;
 
+
+// MATRIX ///////////////////
+
+const int DEFAULT_ALLOC = 4;
+
+class Matrix {
+	std::vector<std::vector<float> > m;
+	int rows, cols;
+public:
+	Matrix(int r = DEFAULT_ALLOC, int c = DEFAULT_ALLOC);
+	inline int nrows();
+	inline int ncols();
+
+	static Matrix identity(int dimensions);
+	std::vector<float>& operator[](const int i);
+	Matrix operator*(const Matrix& a);
+	Matrix transpose();
+	Matrix inverse();
+};
+
+
+// TRIANGLE ///////////////////
+
+struct BoundingBox {
+	Vec2i p_max, p_min;
+};
+
+template <class t> struct Triangle {
+	t a, b, c;
+
+	Triangle() : a(0), b(0), c(0) {}
+	Triangle(t p1, t p2, t p3) : a(p1), b(p2), c(p3) {}
+
+	inline BoundingBox GetBoundingBox() {
+		return { {min(min(a.x, b.x), c.x), max(max(a.y, b.y), c.y)}, {max(max(a.x, b.x), c.x), min(min(a.y, b.y),c.y)} };
+	}
+};
+
+
+typedef Triangle<double> Trid;
+typedef Triangle<float> Trif;
+typedef Triangle<int>   Trii;
+
 #endif //__GEOMETRY__
+
+

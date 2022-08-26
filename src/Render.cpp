@@ -117,19 +117,19 @@ namespace Render {
         return accept;
     }
 
-    void dLine_Bresenham(int x_ini, int y_ini, int x_end, int y_end, uint32_t color)
+    void dLine_Bresenham(int x_ini, int y_ini, int x_end, int y_end, const uint32_t& color)
     {
         if (sunderCoen(x_ini, y_ini, x_end, y_end))
         {
             // variable que sirve para saber si es mas vertical la cuesta
-            bool steep = false;
+            bool _steep = false;
 
             // comprobamos si es mas vertical que horizontal
             // en caso de serlo se debe iterar a traves de las y por lo que se cambian
             if (std::abs(x_ini - x_end) < std::abs(y_ini - y_end)) {
                 std::swap(x_ini, y_ini);
                 std::swap(x_end, y_end);
-                steep = true;
+                _steep = true;
             }
             // comprobamos que se dibuja de izquierda a derecha para evitar problemas
             if (x_ini > x_end) {
@@ -137,25 +137,65 @@ namespace Render {
                 std::swap(y_ini, y_end);
             }
 
-            int dx = x_end - x_ini;
-            int dy = y_end - y_ini;
+            int _dx = x_end - x_ini;
+            int _dy = y_end - y_ini;
 
-            int pk = std::abs(dy) * 2;
-            int pnext = 0;
+            int _pk = std::abs(_dy) * 2;
+            int _pnext = 0;
 
-            int y = y_ini;
+            int _y = y_ini;
             for (int x = x_ini; x <= x_end; x++) {
-                if (steep) {
-                    Window::GetInstance().PaintPixel(y, x, color);
+                if (_steep) {
+                    Window::GetInstance().PaintPixel(_y, x, color);
                 }
                 else {
-                    Window::GetInstance().PaintPixel(x, y, color);
+                    Window::GetInstance().PaintPixel(x, _y, color);
                 }
 
-                pnext += pk;
-                if (pnext > dx) {
-                    y += (y_end > y_ini ? 1 : -1);
-                    pnext -= dx * 2;
+                _pnext += _pk;
+                if (_pnext > _dx) {
+                    _y += (y_end > y_ini ? 1 : -1);
+                    _pnext -= _dx * 2;
+                }
+            }
+        }
+    }
+
+    void dLine_DDA(int x_ini, int y_ini, int x_end, int y_end, const uint32_t& color)
+    {
+        if (sunderCoen(x_ini, y_ini, x_end, y_end))
+        {
+            // variable que sirve para saber si es mas vertical la cuesta
+            bool _steep = false;
+
+            // comprobamos si es mas vertical que horizontal
+            // en caso de serlo se debe iterar a traves de las y por lo que se cambian
+            if (std::abs(x_ini - x_end) < std::abs(y_ini - y_end)) {
+                std::swap(x_ini, y_ini);
+                std::swap(x_end, y_end);
+                _steep = true;
+            }
+            // comprobamos que se dibuja de izquierda a derecha para evitar problemas
+            if (x_ini > x_end) {
+                std::swap(x_ini, x_end);
+                std::swap(y_ini, y_end);
+            }
+
+            if (x_ini - x_end == 0)
+                return;
+
+            float _m = (float)(y_end - y_ini) / (float)(x_end - x_ini);
+
+            float _y = y_ini;
+
+            for (int x = x_ini; x <= x_end; x++) {
+                _y += _m;
+
+                if (_steep) {
+                    Window::GetInstance().PaintPixel((int)_y, x, color);
+                }
+                else {
+                    Window::GetInstance().PaintPixel(x, (int)_y, color);
                 }
             }
         }
