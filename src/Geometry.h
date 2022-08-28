@@ -18,6 +18,8 @@ template <class t> struct Vec2 {
 	inline Vec2<t> operator +(const Vec2<t>& V) const { return Vec2<t>(u + V.u, v + V.v); }
 	inline Vec2<t> operator -(const Vec2<t>& V) const { return Vec2<t>(u - V.u, v - V.v); }
 	inline Vec2<t> operator *(float f)          const { return Vec2<t>(u * f, v * f); }
+
+	inline float cross(const Vec2<t>& V) const { return ( x * V.y - y * V.x ); }
 };
 
 template <class t> struct Vec3 {
@@ -76,14 +78,22 @@ template <class t> struct Triangle {
 	Triangle(t p1, t p2, t p3) : a(p1), b(p2), c(p3) {}
 
 	inline BoundingBox GetBoundingBox() {
-		return { {min(min(a.x, b.x), c.x), max(max(a.y, b.y), c.y)}, {max(max(a.x, b.x), c.x), min(min(a.y, b.y),c.y)} };
+		return { {max(max(a.x, b.x), c.x), max(max(a.y, b.y), c.y)}, {max(min(min(a.x, b.x), c.x), 0), max(min(min(a.y, b.y),c.y),0)} };
 	}
+
+	inline t GetV1() const { return { b.x - a.x, b.y - a.y }; }
+	inline t GetV2() const { return { c.x - b.x, c.y - b.y }; }
+	inline t GetV3() const { return { a.x - c.x, a.y - c.y }; }
+	inline t GetAP(t P) const { return { P.x - a.x, P.y - a.y }; }
+	inline t GetBP(t P) const { return { P.x - b.x, P.y - b.y }; }
+	inline t GetCP(t P) const { return { P.x - c.x, P.y - c.y }; }
 };
 
 
-typedef Triangle<double> Trid;
-typedef Triangle<float> Trif;
-typedef Triangle<int>   Trii;
+typedef Triangle<Vec2i>   Triangle2Di;
+typedef Triangle<Vec2f>   Triangle2Df;
+typedef Triangle<Vec3i>   Triangle3Di;
+typedef Triangle<Vec3f>   Triangle3Df;
 
 #endif //__GEOMETRY__
 

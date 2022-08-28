@@ -18,6 +18,9 @@ namespace Render {
 	int compute(int x, int y);
 	
 	// triangulos
+	inline void ClampBoundingBox(BoundingBox& box) { box.p_max = { min(box.p_max.x, Window::GetInstance().GetWidth()-1), min(box.p_max.y, Window::GetInstance().GetHeight()-1) }; }
+	void DrawTriangle(Triangle2Di& tri, const uint32_t& color);
+	bool Baricentric(const Triangle2Di& tri, const Vec2i& p);
 }
 
 #endif //__RENDER__

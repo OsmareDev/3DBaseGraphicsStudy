@@ -6,18 +6,20 @@ namespace Render {
 
     void Renderize()
     {
-        for (int i = 0; i < model->nfaces(); i++) {
-            std::vector<int> face = model->face(i);
-            for (int j = 0; j < 3; j++) {
-                Vec3f v0 = model->vert(face[j]);
-                Vec3f v1 = model->vert(face[(j + 1) % 3]);
-                int x0 = (v0.x + 1.) * Window::GetInstance().GetWidth() / 2.;
-                int y0 = (v0.y + 1.) * Window::GetInstance().GetHeight() / 2.;
-                int x1 = (v1.x + 1.) * Window::GetInstance().GetWidth() / 2.;
-                int y1 = (v1.y + 1.) * Window::GetInstance().GetHeight() / 2.;
-                dLine_Bresenham(x0, y0, x1, y1, 0xFF00FF);
-            }
-        }
+        Vec2i a(100,10), b(70,80), c(10,10);
+        Vec2i d(100, 10), e(30, 60), f(-10, -10);
+        Triangle2Di t1(a, b, c), t2(d, e, f);
+
+        DrawTriangle(t1, 0xFF0000);
+        DrawTriangle(t2, 0x00FF00);
+
+        dLine_Bresenham(t1.a.x, t1.a.y, t1.b.x, t1.b.y, 0xFFFFFF);
+        dLine_Bresenham(t1.b.x, t1.b.y, t1.c.x, t1.c.y, 0xFFFFFF);
+        dLine_Bresenham(t1.c.x, t1.c.y, t1.a.x, t1.a.y, 0xFFFFFF);
+
+        dLine_Bresenham(t2.a.x, t2.a.y, t2.b.x, t2.b.y, 0xFFFF00);
+        dLine_Bresenham(t2.b.x, t2.b.y, t2.c.x, t2.c.y, 0xFFFF00);
+        dLine_Bresenham(t2.c.x, t2.c.y, t2.a.x, t2.a.y, 0xFFFF00);
     }
 
     int compute(int x, int y)
@@ -201,4 +203,39 @@ namespace Render {
         }
     }
 
+    void DrawTriangle(Triangle2Di& tri, const uint32_t& color)
+    {
+        BoundingBox box = tri.GetBoundingBox();
+        ClampBoundingBox(box);
+
+        bool check = false;
+
+        for (int y = box.p_min.y; y < box.p_max.y; y++)
+        {
+            for (int x = box.p_min.x; x < box.p_max.x; x++)
+            {
+                if (Baricentric(tri, { x,y }))
+                {
+                    check = true;
+                    Window::GetInstance().PaintPixel(x,y,color);
+                }
+                else
+                    if (check)
+                        break;
+
+            }
+            check = false;
+        }
+    }
+
+    bool Baricentric(const Triangle2Di& tri, const Vec2i& p)
+    {
+        bool check = true;
+
+        check &= ((tri.GetV1().cross(tri.GetAP(p))) >= 0.f);
+        check &= ((tri.GetV2().cross(tri.GetBP(p))) >= 0.f);
+        check &= ((tri.GetV3().cross(tri.GetCP(p))) >= 0.f);
+
+        return check;
+    }
 }

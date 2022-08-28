@@ -24,7 +24,8 @@ public:
 		wchar_t buffer[256];
 		char vOutChar[256];
 
-		_gcvt_s(vOutChar, sizeof(vOutChar), duration.count() * 1000.0f, 8);
+		// multiplicar por 1000.0f para milisegundos
+		_gcvt_s(vOutChar, sizeof(vOutChar), duration.count(), 8);
 		mbstowcs_s(NULL, buffer, sizeof(buffer) / 2, vOutChar, sizeof(vOutChar));
 
 
