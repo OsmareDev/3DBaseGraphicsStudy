@@ -6,6 +6,7 @@
 #include <cmath>
 #include <vector>
 #include <assert.h>
+#include "Window.h"
 
 template <class t> struct Vec2 {
 	union {
@@ -76,9 +77,10 @@ template <class t> struct Triangle {
 
 	Triangle() : a(0), b(0), c(0) {}
 	Triangle(t p1, t p2, t p3) : a(p1), b(p2), c(p3) {}
+	Triangle(t p1, t p2, t p3, const uint32_t color) : a(p1), b(p2), c(p3) { Draw(color); }
 
 	inline BoundingBox GetBoundingBox() {
-		return { {max(max(a.x, b.x), c.x), max(max(a.y, b.y), c.y)}, {max(min(min(a.x, b.x), c.x), 0), max(min(min(a.y, b.y),c.y),0)} };
+		return { {min(max(max(a.x, b.x), c.x),(Window::GetInstance().GetWidth() - 1)), min(max(max(a.y, b.y), c.y), (Window::GetInstance().GetHeight() - 1))}, {max(min(min(a.x, b.x), c.x), 0), max(min(min(a.y, b.y),c.y),0)} };
 	}
 
 	inline t GetV1() const { return { b.x - a.x, b.y - a.y }; }
@@ -87,6 +89,39 @@ template <class t> struct Triangle {
 	inline t GetAP(t P) const { return { P.x - a.x, P.y - a.y }; }
 	inline t GetBP(t P) const { return { P.x - b.x, P.y - b.y }; }
 	inline t GetCP(t P) const { return { P.x - c.x, P.y - c.y }; }
+
+	inline bool isInside(const Vec2i& p) {
+		bool check = true;
+
+		check &= ((GetV1().cross(GetAP(p))) >= 0.f);
+		check &= ((GetV2().cross(GetBP(p))) >= 0.f);
+		check &= ((GetV3().cross(GetCP(p))) >= 0.f);
+
+		return check;
+	}
+
+	inline void Draw(const uint32_t& color) {
+		BoundingBox box = GetBoundingBox();
+
+		bool check = false;
+
+		for (int y = box.p_min.y; y < box.p_max.y; y++)
+		{
+			for (int x = box.p_min.x; x < box.p_max.x; x++)
+			{
+				if (isInside({ x,y }))
+				{
+					check = true;
+					Window::GetInstance().PaintPixel(x, y, color);
+				}
+				else
+					if (check)
+						break;
+
+			}
+			check = false;
+		}
+	}
 };
 
 
@@ -95,6 +130,22 @@ typedef Triangle<Vec2f>   Triangle2Df;
 typedef Triangle<Vec3i>   Triangle3Di;
 typedef Triangle<Vec3f>   Triangle3Df;
 
+
+// hacer una clase linea
+
+struct Line {
+	Vec2i a, b;
+
+	Line() : a(), b() {}
+	Line(Vec2i p1, Vec2i p2) : a(p1), b(p2) {}
+	Line(Vec2i p1, Vec2i p2, const uint32_t color) : a(p1), b(p2) { Draw(color); }
+
+	void bresenham(const uint32_t& color);
+	void dda(const uint32_t& color);
+	bool sunderCoen(int& x0, int& y0, int& x1, int& y1);
+	int compute(const int& x, const int& y);
+
+	void Draw(const uint32_t& color) { bresenham(color); };
+};
+
 #endif //__GEOMETRY__
-
-
