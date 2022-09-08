@@ -4,9 +4,16 @@
 #pragma once
 
 #include <cmath>
-#include <vector>
 #include <assert.h>
-#include "Window.h"
+#include <string>
+#include <vector>
+#include "Crono.h"
+
+// se crean las definiciones aqui porque no las alacanzaba el cpp
+#define min(a,b) ((a)<(b)?(a):(b))
+#define max(a,b) ((a)>(b)?(a):(b))
+#define M_PI 3.14159265358979323846
+#define toRad(ang) (ang * M_PI / 180)
 
 template <class t> struct Vec2 {
 	union {
@@ -21,6 +28,7 @@ template <class t> struct Vec2 {
 	inline Vec2<t> operator *(float f)          const { return Vec2<t>(u * f, v * f); }
 
 	inline float cross(const Vec2<t>& V) const { return ( x * V.y - y * V.x ); }
+	t& operator[](const int i) { return i <= 0 ? x : y; }
 };
 
 template <class t> struct Vec3 {
@@ -38,6 +46,8 @@ template <class t> struct Vec3 {
 	inline t       operator *(const Vec3<t>& v) const { return x * v.x + y * v.y + z * v.z; }
 	float norm() const { return std::sqrt(x * x + y * y + z * z); }
 	Vec3<t>& normalize(t l = 1) { *this = (*this) * (l / norm()); return *this; }
+
+	t& operator[](const int i) { return i <= 0 ? x : (i == 1 ? y : z); }
 };
 
 typedef Vec2<float> Vec2f;
@@ -52,14 +62,18 @@ const int DEFAULT_ALLOC = 4;
 
 class Matrix {
 	std::vector<std::vector<float> > m;
-	int rows, cols;
 public:
+	int rows, cols;
 	Matrix(int r = DEFAULT_ALLOC, int c = DEFAULT_ALLOC);
 	inline int nrows();
 	inline int ncols();
 
-	static Matrix identity(int dimensions);
-	std::vector<float>& operator[](const int i);
+	static Matrix identity(const int& dimensions);
+	static Matrix RotX(const float& ang);
+	static Matrix RotY(const float& ang);
+	static Matrix RotZ(const float& ang);
+
+	std::vector<float>& operator[](const int& i);
 	Matrix operator*(const Matrix& a);
 	Matrix transpose();
 	Matrix inverse();
@@ -72,25 +86,33 @@ struct BoundingBox {
 	Vec2i p_max, p_min;
 };
 
-template <class t> struct Triangle {
-	t a, b, c;
+struct Triangle {
+	union {
+		struct { Vec3f v1, v2, v3; };
+		Vec3f vertex[3];
+	};
+	union {
+		struct { Vec2i a, b, c; };
+		Vec2i screen_points[3];
+	};
 
-	Triangle() : a(0), b(0), c(0) {}
-	Triangle(t p1, t p2, t p3) : a(p1), b(p2), c(p3) {}
-	Triangle(t p1, t p2, t p3, const uint32_t color) : a(p1), b(p2), c(p3) { Draw(color); }
+	Triangle(Vec2i p1, Vec2i p2, Vec2i p3) : screen_points{ p1,p2,p3 } {}
+	Triangle(Vec3f p1, Vec3f p2, Vec3f p3) : vertex{ p1,p2,p3 } {}
+
+	//Triangle(Vec2i p1, Vec2i p2, Vec2i p3, const uint32_t color) : screen_points{ p1,p2,p3 } { Draw(color); }
 
 	inline BoundingBox GetBoundingBox() {
-		return { {min(max(max(a.x, b.x), c.x),(Window::GetInstance().GetWidth() - 1)), min(max(max(a.y, b.y), c.y), (Window::GetInstance().GetHeight() - 1))}, {max(min(min(a.x, b.x), c.x), 0), max(min(min(a.y, b.y),c.y),0)} };
+		return { {max(max(a.x, b.x), c.x), max(max(a.y, b.y), c.y)}, {min(min(a.x, b.x), c.x), min(min(a.y, b.y),c.y)} };
 	}
 
-	inline t GetV1() const { return { b.x - a.x, b.y - a.y }; }
-	inline t GetV2() const { return { c.x - b.x, c.y - b.y }; }
-	inline t GetV3() const { return { a.x - c.x, a.y - c.y }; }
-	inline t GetAP(t P) const { return { P.x - a.x, P.y - a.y }; }
-	inline t GetBP(t P) const { return { P.x - b.x, P.y - b.y }; }
-	inline t GetCP(t P) const { return { P.x - c.x, P.y - c.y }; }
+	inline Vec2i GetV1() const { return { b.x - a.x, b.y - a.y }; }
+	inline Vec2i GetV2() const { return { c.x - b.x, c.y - b.y }; }
+	inline Vec2i GetV3() const { return { a.x - c.x, a.y - c.y }; }
+	inline Vec2i GetAP(Vec2i P) const { return { P.x - a.x, P.y - a.y }; }
+	inline Vec2i GetBP(Vec2i P) const { return { P.x - b.x, P.y - b.y }; }
+	inline Vec2i GetCP(Vec2i P) const { return { P.x - c.x, P.y - c.y }; }
 
-	inline bool isInside(const Vec2i& p) {
+	inline bool isInside(const Vec2i& p) const {
 		bool check = true;
 
 		check &= ((GetV1().cross(GetAP(p))) >= 0.f);
@@ -100,52 +122,25 @@ template <class t> struct Triangle {
 		return check;
 	}
 
-	inline void Draw(const uint32_t& color) {
-		BoundingBox box = GetBoundingBox();
+	inline Vec3f& operator[](const int i) { return i <= 0 ? v1 : (i == 1 ? v2 : v3); }
 
-		bool check = false;
-
-		for (int y = box.p_min.y; y < box.p_max.y; y++)
-		{
-			for (int x = box.p_min.x; x < box.p_max.x; x++)
-			{
-				if (isInside({ x,y }))
-				{
-					check = true;
-					Window::GetInstance().PaintPixel(x, y, color);
-				}
-				else
-					if (check)
-						break;
-
-			}
-			check = false;
-		}
-	}
+	void RotateX(const float& ang);
+	void RotateY(const float& ang);
+	void RotateZ(const float& ang);
 };
 
 
-typedef Triangle<Vec2i>   Triangle2Di;
-typedef Triangle<Vec2f>   Triangle2Df;
-typedef Triangle<Vec3i>   Triangle3Di;
-typedef Triangle<Vec3f>   Triangle3Df;
-
-
-// hacer una clase linea
+// LINE /////////////////////////
 
 struct Line {
 	Vec2i a, b;
 
 	Line() : a(), b() {}
 	Line(Vec2i p1, Vec2i p2) : a(p1), b(p2) {}
-	Line(Vec2i p1, Vec2i p2, const uint32_t color) : a(p1), b(p2) { Draw(color); }
-
-	void bresenham(const uint32_t& color);
-	void dda(const uint32_t& color);
-	bool sunderCoen(int& x0, int& y0, int& x1, int& y1);
-	int compute(const int& x, const int& y);
-
-	void Draw(const uint32_t& color) { bresenham(color); };
 };
+
+
+Vec3f m2v(Matrix m);
+Matrix v2m(Vec3f v);
 
 #endif //__GEOMETRY__

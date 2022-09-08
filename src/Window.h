@@ -4,10 +4,9 @@
 #pragma once
 
 #include <windows.h>
-#include <string>
+#include "Camera.h"
 
-
-class Window {
+class Window : Void_Camera {
 public:
 	Window(const Window&) = delete;
 
@@ -33,6 +32,10 @@ public:
 	void SetRender(void(*function)()) { Render = function; };
 	void StartLoop();
 	void PaintPixel(const int& x, const int& y, const uint32_t& color) const;
+
+	void TransformTri(Triangle& t) { TransformTriangle(t); }
+	void CleanWindow();
+	void Print(wchar_t buffer[256]);
 	
 private:
 	Window();
@@ -45,7 +48,6 @@ private:
 
 	void(*Render)();
 
-	int window_width = 1280, window_height = 720;
 	std::wstring window_title = L"Void Engine";
 	bool window_running = false;
 	int bufferSize;

@@ -33,6 +33,4 @@ public:
 	}
 };
 
-
-
 #endif //__CRONO__

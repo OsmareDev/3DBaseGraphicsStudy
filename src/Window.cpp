@@ -139,3 +139,13 @@ void Window::PaintPixel(const int& x, const int& y, const uint32_t& color) const
     uint32_t* pixel = (uint32_t*)memory + (y * window_width) + x;
     *pixel = color;
 }
+
+void Window::CleanWindow() {
+    for (int x = 0; x < window_width; x++)
+    {
+        for (int y = 0; y < window_height; y++)
+        {
+            PaintPixel(x, y, 0x000000);
+        }
+    }
+}
